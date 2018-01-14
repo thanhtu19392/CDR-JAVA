@@ -2,7 +2,7 @@ import java.util.Random;
 
 
 public class Simulator {
-	private Random r = new Random();
+	private static Random r = new Random(100);
 	 
     public double getRandomGauss(double mean, double stdDev) {
         double nextGauss = r.nextGaussian();

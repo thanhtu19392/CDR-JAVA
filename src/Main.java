@@ -21,6 +21,8 @@ public class Main {
 	public static double volatility;
 	public static double sumES =0;
 	public static double average =0;
+	public static double [] unCorrelatedRN;
+	public static double [] correlatedRN = new double[nbStock];
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -30,27 +32,14 @@ public class Main {
 		}
 		Portfolio portfolio = new Portfolio(0.25, listLoans);
 		
-		double [][] MatrixCorrelation = new double [nbStock][nbStock];
-		for (int row = 0; row < nbStock; row++) {
-			for (int col = 0; col < nbStock; col++) {
-				if (row == col) {
-					MatrixCorrelation[row][col] = 1d;
-				} else {
-					MatrixCorrelation[row][col] = portfolio.getCorrelation();
-				}
-			}
-		}
-		
-		Cholesky choleskyDecomposition = new Cholesky(MatrixCorrelation);
-		double [][] L = choleskyDecomposition.getL ;
-		
 		Simulator simulator = new Simulator();
+
 		for (int i = 0; i < nbSim ; i++){
 			Iterator<Loan> loanIterator= portfolio.getLoan().iterator();
 			while(loanIterator.hasNext()){
 				Loan loan = loanIterator.next();
 				randProba = simulator.getRandomUniform();
-				System.out.println(randProba);
+				//System.out.println(randProba);
 				//randProba = simulator.generateRandomNumberArray(nbStock);
 				
 				if (randProba <= loan.getProbaDefault() ){
@@ -71,8 +60,6 @@ public class Main {
 		}
 		
 		average = sum/nbSim;
-		
-		
 		volatility = Math.sqrt((sumCarre/nbSim)- (sum/(nbSim-1)*(sum/nbSim)));
 		System.out.println("Expected Loss:" + average); 
 		System.out.println("Volatility:" + volatility);
@@ -82,6 +69,7 @@ public class Main {
 		Collections.reverse(totalLossList);
 		
 		for (int i =0; i< nbSim; i++){
+			
 			//System.out.println(totalLossList.get(i));
 		}
 		
