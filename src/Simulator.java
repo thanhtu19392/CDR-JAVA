@@ -2,12 +2,12 @@ import java.util.Random;
 
 
 public class Simulator {
-	private static Random r = new Random(100);
+	private Random r = new Random();
 	 
     public double getRandomGauss(double mean, double stdDev) {
         double nextGauss = r.nextGaussian();
         double rand = nextGauss * stdDev + mean;
-        System.out.println(rand);
+        //System.out.println(rand);
         return rand;
     }
     

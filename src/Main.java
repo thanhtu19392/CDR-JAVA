@@ -21,34 +21,38 @@ public class Main {
 	public static double volatility;
 	public static double sumES =0;
 	public static double average =0;
-	public static double [] unCorrelatedRN;
-	public static double [] correlatedRN = new double[nbStock];
+	public static double [] uncorrelateProba = new double[nbStock];
+	public static int n ;
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		for (int i =0; i< nbStock; i++){
-			Loan loan = new Loan(i, 0.25, 0.6, 100000000);
+			Loan loan = new Loan(i, 0.0025, 0.6, 100000000);
 			listLoans.add(loan);
 		}
 		Portfolio portfolio = new Portfolio(0.25, listLoans);
 		
-		Simulator simulator = new Simulator();
-
+		//Simulator simulator = new Simulator();
+		
 		for (int i = 0; i < nbSim ; i++){
+			int n = 0;
+			for (int j = 0; j < nbStock; j++){
+				uncorrelateProba[j] = Math.random();
+			}
 			Iterator<Loan> loanIterator= portfolio.getLoan().iterator();
 			while(loanIterator.hasNext()){
 				Loan loan = loanIterator.next();
-				randProba = simulator.getRandomUniform();
-				//System.out.println(randProba);
+				//randProba = simulator.getRandomUniform();
 				//randProba = simulator.generateRandomNumberArray(nbStock);
-				
-				if (randProba <= loan.getProbaDefault() ){
+				System.out.println(uncorrelateProba[n]);
+				if (uncorrelateProba[n] <= loan.getProbaDefault() ){
 					//System.out.println("Default of obligor " + i);
 					totalLoss[i] += (1- loan.getRecoveryRate()) * loan.exposure;
 				}
 				else{
 					//System.out.println("Not default of obligor " + i);
 				}
+				n++;
 			}
 		}
 		
@@ -60,6 +64,7 @@ public class Main {
 		}
 		
 		average = sum/nbSim;
+		
 		volatility = Math.sqrt((sumCarre/nbSim)- (sum/(nbSim-1)*(sum/nbSim)));
 		System.out.println("Expected Loss:" + average); 
 		System.out.println("Volatility:" + volatility);
@@ -69,7 +74,6 @@ public class Main {
 		Collections.reverse(totalLossList);
 		
 		for (int i =0; i< nbSim; i++){
-			
 			//System.out.println(totalLossList.get(i));
 		}
 		

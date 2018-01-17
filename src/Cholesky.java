@@ -69,7 +69,7 @@ public class Cholesky {
         double[][] L = cholesky(A);
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                System.out.print(L[i][j]);
+                System.out.println(L[i][j]);
             }
             System.out.println();
         }
