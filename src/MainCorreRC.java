@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class MainCorreRC {
@@ -14,8 +15,8 @@ public class MainCorreRC {
 	public static double probaVar = 0.95;
 	public static int seuil = (int) ((1 - probaVar) * nbSim);
 	// public static double [] randProba;
-	public static double totalLoss[] = new double[nbSim];
-	public static ArrayList<Double> totalLossList = new ArrayList<Double>();
+	public static double lossObligor[] = new double[nbStock];
+	//public static ArrayList<Double> totalLossList = new ArrayList<Double>();
 	public static double sum = 0;
 	public static double sumCarre = 0;
 	public static double volatility;
@@ -27,6 +28,10 @@ public class MainCorreRC {
 	public static ArrayList<ArrayList<Double>> batcheArray = new ArrayList<ArrayList<Double>>();
 	//public static double[][] batche = new double[nbSim][nbStock];
 	public static ArrayList<Double> batcheList = new ArrayList<Double>();
+	public static ArrayList<ArrayList<Double>> allBatche = new ArrayList<ArrayList<Double>>();
+	public static ArrayList<ArrayList<Double>> finalBatche = new ArrayList<ArrayList<Double>>();
+	public static double moyenne = 0;
+
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -52,7 +57,9 @@ public class MainCorreRC {
 		
 		Simulator simulator = new Simulator();
 		
-		for (int m = 0; m < 1; m++){
+		for (int m = 0; m < 10; m++){
+			sum = 0;
+			ArrayList<ArrayList<Double>> batcheArray = new ArrayList<ArrayList<Double>>();
 			for (int i = nbSim/10*m; i < nbSim/10*(m+1); i++) {
 				int n = 0;
 				unCorrelatedRN = new double[nbStock];
@@ -68,36 +75,73 @@ public class MainCorreRC {
 				}
 				
 				Iterator<Loan> loanIterator = portfolio.getLoan().iterator();
-				
+				ArrayList<Double> batcheList = new ArrayList<Double>();
 				while (loanIterator.hasNext()) {
 					Loan loan = loanIterator.next();
 					if (correlatedRN[n] < -2.8) {
-						batcheArray.get(i).set(n, (1 - loan.getRecoveryRate()) * loan.exposure);
+						batcheList.add((1 - loan.getRecoveryRate()) * loan.exposure);
+						//System.out.println("defaut" + n);
 					} else {
-						// System.out.println("Not default of obligor " + i);
+						batcheList.add(0.0);
+						//System.out.println("not defaut" +n);
 					}
 					n++;
 				}
-			}
-			
-			Collections.sort(batcheArray, new Comparator<ArrayList<Double>>() {    
-		        @Override
-		        public int compare(ArrayList<Double> o1, ArrayList<Double> o2) {
-		            return o1.get(0).compareTo(o2.get(0));
-		        }               
-			});
-			
-			System.out.println(batcheArray);
-			//ArrayList batcheArray = new ArrayList(Arrays.asList(batche));
-			//Collections.sort(batcheArray);
-			//sort every batch
-			/*
-			for (int i = 0 ; i< nbStock; i++){
-				for (int j = 0 ; j < nbSim/10; j++){
+				batcheArray.add(batcheList);
+				if (batcheArray.size() == 10000){
+					for(int c=0; c<batcheArray.get(0).size(); c++) {
+					    List<Double> col = new ArrayList<Double>();
+					    for( int r=0; r<batcheArray.size(); r++ )
+					        col.add( batcheArray.get(r).get(c) );
+		
+					    Collections.sort(col);
+					    Collections.reverse(col);
+		
+					    for( int r=0; r<col.size(); r++ )
+					        batcheArray.get(r).set( c, col.get(r) );
+					}
+					
+					for (int a = 0 ; a < 500; a++){
+						for (int j = 0; j< nbStock; j++){
+							sum += batcheArray.get(a).get(j);
+						}
+						allBatche.add(batcheArray.get(a));
+						}
+					//System.out.println(batcheArray);
+					System.out.println(sum/500);
 				}
-			}*/
+			}
+		}
+		//System.out.println(allBatche.size());
+		
+		for(int c=0; c<allBatche.get(0).size(); c++) {
+		    List<Double> col = new ArrayList<Double>();
+		    for( int r=0; r<allBatche.size(); r++ )
+		        col.add( allBatche.get(r).get(c) );
+
+		    Collections.sort(col);
+		    Collections.reverse(col);
+
+		    for( int r=0; r<col.size(); r++ )
+		        allBatche.get(r).set( c, col.get(r) );
+		}
+		for (int i = 0 ; i < seuil; i++){
+			finalBatche.add(allBatche.get(i));
+		}
+		//System.out.println(finalBatche);
+		
+		for(int i = 0; i < nbStock;i++){
+			for(int j = 0; j < finalBatche.size(); j++){
+				lossObligor[i] += finalBatche.get(j).get(i);
+			}
+			lossObligor[i] /= finalBatche.size();
 		}
 		
+		for (int i = 0; i < nbStock; i++){
+			moyenne += lossObligor[i];
+		}
+		moyenne /= nbStock;
+		System.out.println(moyenne);
 	}
-
 }
+
