@@ -1,19 +1,24 @@
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
+import org.apache.commons.math3.distribution.MultivariateNormalDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
 
-public class Simulator {
-	private Random r = new Random();
+import Jama.Matrix;
+
+
+public class Simulator extends utils {
+	private static Random r = new Random();
 	 
-    public double getRandomGauss(double mean, double stdDev) {
+    public static double getRandomGauss(double mean, double stdDev) {
         double nextGauss = r.nextGaussian();
         double rand = nextGauss * stdDev + mean;
-        //System.out.println(rand);
         return rand;
     }
     
     public double getRandomUniform(){
     	double nextItem = r.nextDouble();
-    	//System.out.println(nextItem);
     	return nextItem;
     }
     
@@ -60,8 +65,83 @@ public class Simulator {
         return numbers;
     }
     
+    public ArrayList<Double> generateOneSimulationImportanceSample(double sigma, int nbStock, Matrix L,
+    																Matrix orthogonalEigenvector, Portfolio portfolio, double lambda ){
+    	/**
+         * Generate an array of risk contributions of all obligor for every simulation in case of importance sample
+         *
+         * @param double sigma, int nbStock, Matrix L, double inverseRisk,
+    			Matrix orthogonalEigenvector, Portfolio portfolio, double lambda 
+         * @return a batch list
+         */
+    	
+    	double totalLoss = 0;
+		int n = 0;
+		NormalDistribution distribution = new NormalDistribution(0, 1);
+		Matrix unCorrelatedRNMatrix = new Matrix(nbStock, 1);
+		for (int i = 0; i< nbStock; i++){
+			unCorrelatedRNMatrix.set(i, 0, getRandomGauss(0, 1));
+		}
+		Matrix correlatedRNMatrix = L.times(unCorrelatedRNMatrix); 
+
+		//create matrix e*
+		Matrix e1Matrix = correlatedRNMatrix;
+        
+		//create matrix e
+		Matrix eMatrix = eMatrix(sigma, orthogonalEigenvector, e1Matrix);
+		double weight = weight(sigma, lambda, orthogonalEigenvector, e1Matrix);
+		//eMatrix = eMatrix.times(weight);
+		Iterator<Loan> loanIterator = portfolio.getLoan().iterator();
+		ArrayList<Double> batcheList = new ArrayList<Double>();
+		while (loanIterator.hasNext()) {
+			Loan loan = loanIterator.next();
+	        double inversePD = distribution.inverseCumulativeProbability(loan.getProbaDefault());
+			if (eMatrix.get(n, 0) < inversePD) {
+				batcheList.add(loan.getExposure() * (1 - loan.getRecoveryRate()) * weight);
+				totalLoss += (1 - loan.getRecoveryRate())* loan.getExposure() * weight;
+			} else {
+				batcheList.add(0.0);
+			}
+			n++;
+		}
+		batcheList.add(totalLoss);
+		batcheList.add(weight);
+		
+		return batcheList;
+    }
     
-    
-    
+    public ArrayList<Double> generateOneSimulationCorrelated(int nbStock, Matrix L, Portfolio portfolio){
+    	/**
+         * Generate an array of risk contributions of all obligor for every simulation in case of correlation
+         *
+         * @param int nbStock, Matrix L, Portfolio portfolio, double inverseRisk
+         * @return a batch list
+         */
+    	
+    	double totalLoss =0;
+		int n = 0;
+		NormalDistribution distribution = new NormalDistribution(0, 1);
+		Matrix unCorrelatedRNMatrix = new Matrix(nbStock, 1);
+		for (int i = 0; i< nbStock; i++){
+			unCorrelatedRNMatrix.set(i, 0, getRandomGauss(0, 1));
+		}
+		Matrix correlatedRNMatrix = L.times(unCorrelatedRNMatrix); 
+		
+		Iterator<Loan> loanIterator = portfolio.getLoan().iterator();
+		ArrayList<Double> batcheList = new ArrayList<Double>();
+		while (loanIterator.hasNext()) {
+			Loan loan = loanIterator.next();
+	        double inversePD = distribution.inverseCumulativeProbability(loan.getProbaDefault());
+			if (correlatedRNMatrix.get(n, 0) < inversePD) {
+				batcheList.add(loan.getExposure() * (1 -  loan.getRecoveryRate()) );
+				totalLoss += (1 - loan.getRecoveryRate()) * loan.getExposure();
+			} else {
+				batcheList.add(0.0);
+			}
+			n++;
+		}
+		batcheList.add(totalLoss);
+		return batcheList;
+    }
 
 }

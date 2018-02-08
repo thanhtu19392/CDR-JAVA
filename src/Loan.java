@@ -4,12 +4,14 @@ public class Loan {
 	public double probaDefault;
 	public double recoveryRate; 
 	public double exposure;
+	public double costOfCapital;
 	
-	public Loan(int number, double probaDefault, double recoveryRate, double exposure){
+	public Loan(int number, double probaDefault, double recoveryRate, double exposure, double costOfCapital){
 		this.number= number;
 		this.probaDefault= probaDefault;
 		this.recoveryRate= recoveryRate;
 		this.exposure= exposure;
+		this.costOfCapital = costOfCapital;
 	}
 	
 	public int getLabel(){
