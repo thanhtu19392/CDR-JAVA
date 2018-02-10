@@ -10,7 +10,7 @@ public class MainCorreEigenvalue extends utils {
 	public static int nbStock = nbStockType1 + nbStockType2 + nbStockType3;	
 	public static ArrayList<Loan> listLoans = new ArrayList<Loan>();
 	public static ArrayList<Double> batcheList = new ArrayList<Double>();
-	public static ArrayList<ArrayList<Double>> allBatche = new ArrayList<ArrayList<Double>>();
+	public static ArrayList<ArrayList<Double>> finalBatche = new ArrayList<ArrayList<Double>>();
 
 	public static void main(String[] args) {
 		/**
@@ -52,10 +52,14 @@ public class MainCorreEigenvalue extends utils {
 				batcheArray.add(batcheList);
 			}
 			sortBatch(batcheArray, nbStock);
-			allBatche.addAll(selectedBatch(batcheArray, seuil));
+			finalBatche.addAll(selectedBatch(batcheArray, seuil));
+			if (finalBatche.size() > 100000){
+				sortBatch(finalBatche, nbStock);
+				finalBatche = selectedBatch(finalBatche, seuil);
+			}
 		}
-		sortBatch(allBatche, nbStock);
-		allBatche = selectedBatch(allBatche, seuil);
-		printResults(allBatche, nbStockType1, nbStockType2, nbStockType3, sum, sumCarre, nbSim);
+		sortBatch(finalBatche, nbStock);
+		finalBatche = selectedBatch(finalBatche, seuil);
+		printResults(finalBatche, nbStockType1, nbStockType2, nbStockType3, sum, sumCarre, nbSim, seuil, false);
 	}
 }

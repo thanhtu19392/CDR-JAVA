@@ -47,6 +47,6 @@ public class MainCorreCholesky extends utils{
 		}
 		sortBatch(allBatche, nbStock);
 		allBatche = selectedBatch(allBatche, seuil);
-		printResults(allBatche, nbStockType1, nbStockType2, nbStockType3, sum, sumCarre, nbSim);
+		printResults(allBatche, nbStockType1, nbStockType2, nbStockType3, sum, sumCarre, nbSim, seuil, false);
 	}
  }

@@ -1,8 +1,6 @@
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
-
-import org.apache.commons.math3.distribution.MultivariateNormalDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 import Jama.Matrix;
@@ -33,7 +31,7 @@ public class Simulator extends utils {
         final double u2 = randomGenerator.nextDouble();
 
         final double number1 = Math.sqrt( -2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-        final double number2 = Math.sqrt( -2 * Math.log(u1)) * Math.sin(2 * Math.PI * u2);
+        //final double number2 = Math.sqrt( -2 * Math.log(u1)) * Math.sin(2 * Math.PI * u2);
 
 
         return number1;
@@ -78,6 +76,10 @@ public class Simulator extends utils {
     	double totalLoss = 0;
 		int n = 0;
 		NormalDistribution distribution = new NormalDistribution(0, 1);
+		System.out.println();
+		System.out.println(distribution.inverseCumulativeProbability(0.125/100));
+		System.out.println(distribution.inverseCumulativeProbability(0.25/100));
+		System.out.println(distribution.inverseCumulativeProbability(0.5/100));
 		Matrix unCorrelatedRNMatrix = new Matrix(nbStock, 1);
 		for (int i = 0; i< nbStock; i++){
 			unCorrelatedRNMatrix.set(i, 0, getRandomGauss(0, 1));
@@ -90,15 +92,15 @@ public class Simulator extends utils {
 		//create matrix e
 		Matrix eMatrix = eMatrix(sigma, orthogonalEigenvector, e1Matrix);
 		double weight = weight(sigma, lambda, orthogonalEigenvector, e1Matrix);
-		//eMatrix = eMatrix.times(weight);
+		//System.out.println(weight);
 		Iterator<Loan> loanIterator = portfolio.getLoan().iterator();
 		ArrayList<Double> batcheList = new ArrayList<Double>();
 		while (loanIterator.hasNext()) {
 			Loan loan = loanIterator.next();
 	        double inversePD = distribution.inverseCumulativeProbability(loan.getProbaDefault());
 			if (eMatrix.get(n, 0) < inversePD) {
-				batcheList.add(loan.getExposure() * (1 - loan.getRecoveryRate()) * weight);
-				totalLoss += (1 - loan.getRecoveryRate())* loan.getExposure() * weight;
+				batcheList.add(loan.getExposure() * (1 - loan.getRecoveryRate()) );
+				totalLoss += (1 - loan.getRecoveryRate())* loan.getExposure() ;
 			} else {
 				batcheList.add(0.0);
 			}
@@ -106,7 +108,9 @@ public class Simulator extends utils {
 		}
 		batcheList.add(totalLoss);
 		batcheList.add(weight);
-		
+		//System.out.println(totalLoss);
+		//System.out.println(weight);
+		//System.out.println();
 		return batcheList;
     }
     

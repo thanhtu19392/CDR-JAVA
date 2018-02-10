@@ -3,7 +3,7 @@ import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
 
-public class MainImportanceSample extends utils{
+public class MainImportanceSampling extends utils{
 
 	public static int nbStockType1 = 20;
 	public static int nbStockType2 = 40;
@@ -23,7 +23,7 @@ public class MainImportanceSample extends utils{
 		 * --------------------------------
 		 * @return: print EL, Vol, Var, ES, risk contribution of obligor
 		 */
-		ImportanceSampling(1.5, 100000 , 0.95);
+		ImportanceSampling(3.0, 100000 , 0.95);
 	}
 	
 	public static void ImportanceSampling(double sigma, int nbSim, double probaVar){
@@ -53,15 +53,17 @@ public class MainImportanceSample extends utils{
 		double sumCarre = 0;
 		for (int m = 0; m < 10; m++) {
 			ArrayList<ArrayList<Double>> batcheArray = new ArrayList<ArrayList<Double>>();
-			for (int i = nbSim / 10 * m; i < nbSim / 10 * (m + 1); i++) {
+			for (int i = nbSim/10  * m; i < nbSim/10 * (m + 1); i++) {
 				batcheList = simulator.generateOneSimulationImportanceSample(sigma, nbStock, L, 
 																			orthogonalEigenvector, portfolio, lambda);
-				sum += batcheList.get(nbStock);
-				sumCarre += Math.pow(batcheList.get(nbStock), 2);
+				double lossEachSimulation = batcheList.get(nbStock);
+				double weightEachSimulation = batcheList.get(nbStock +1);
+				sum += lossEachSimulation * weightEachSimulation;
+				sumCarre += Math.pow(lossEachSimulation * weightEachSimulation, 2);
 				batcheArray.add(batcheList);
 			}
 			//finish one batch
-			//sort one batch
+			//sort the batch
 			sortBatch(batcheArray, nbStock);
 			finalBatche.addAll(selectedBatcheIS(batcheArray, seuil));
 			if (finalBatche.size() > 100000){
@@ -69,11 +71,11 @@ public class MainImportanceSample extends utils{
 				finalBatche = selectedBatcheIS(finalBatche, seuil);
 			}
 		}
-		//sort all batch
+		//sort final batch
 		sortBatch(finalBatche, nbStock);
 		finalBatche = selectedBatcheIS(finalBatche, seuil);
 		System.out.println("sigma: " + sigma);
-		printResults(finalBatche, nbStockType1, nbStockType2, nbStockType3, sum, sumCarre, nbSim);
+		printResults(finalBatche, nbStockType1, nbStockType2, nbStockType3, sum, sumCarre, nbSim, seuil, true);
 	}
 	
 	public static ArrayList<ArrayList<Double>> selectedBatcheIS(ArrayList<ArrayList<Double>> BatchArray, double seuil){

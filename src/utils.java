@@ -8,6 +8,9 @@ import Jama.Matrix;
 public class utils {
 	
 	public static Matrix getSqrt(double[] realEigenvalues) {
+		/**
+		 * return Square root Matrix of orthogonal matrix
+		 */
 		Matrix result = new Matrix(realEigenvalues.length,
 				realEigenvalues.length);
 		for (int i = 0; i < realEigenvalues.length; i++) {
@@ -24,16 +27,22 @@ public class utils {
 		return result;
 	}
 	
-	public static void sortBatch (ArrayList<ArrayList<Double>> table, final int nbStock){
+	public static void sortBatch (ArrayList<ArrayList<Double>> table, final int col){
+		/**
+		 * sort batch in fonction of values in column col of batch
+		 */
 		Collections.sort(table, new Comparator<List<Double>>() {
 			  @Override
 			  public int compare(List<Double> list1, List<Double> list2) {
-			    return list1.get(nbStock).compareTo(list2.get(nbStock));
+			    return list1.get(col).compareTo(list2.get(col));
 			  }
 			});
 	}
 	
 	public static Matrix createMatrixCorrelation(int length, double correlationValue){
+		/**
+		 * create matrix correlation
+		 */
 		Matrix MatrixCorrelation = new Matrix(length,length);
 		for(int i = 0; i < length; i++) {
             for(int j = 0; j <= i; j++) {
@@ -51,6 +60,9 @@ public class utils {
 	
 	public static void addLoans(ArrayList<Loan> listLoans, int nbStock, double probaDefault, 
 								double recoveryRate, double exposure, double costOfCapital){
+		/**
+		 * add loan to listLoans
+		 */
 		for (int i = 0; i < nbStock; i++) {
 			Loan loan = new Loan(i, probaDefault, recoveryRate, exposure, costOfCapital);
 			listLoans.add(loan);
@@ -114,32 +126,42 @@ public class utils {
 	
 	public static void printResults(ArrayList<ArrayList<Double>> finalBatche,
 			int nbStockType1, int nbStockType2, int nbStockType3, double sum,
-			double sumCarre, int nbSim) {
+			double sumCarre, int nbSim, int seuil, boolean IS) {
+		/**
+		 * print results: EL, ES, Vol, Var, dispersion de ES
+		 */
 		int nbStock = nbStockType1 + nbStockType2 + nbStockType3;
 		int lengthFinalBatch = finalBatche.size();
 		double lossObligor[] = new double[finalBatche.get(0).size()];
 		for (int i = 0; i < finalBatche.get(0).size(); i++) {
 			for (int j = 0; j < lengthFinalBatch; j++) {
-				lossObligor[i] += finalBatche.get(j).get(i);
+				if (IS) lossObligor[i] += finalBatche.get(j).get(i) * finalBatche.get(j).get(nbStock +1);
+				else lossObligor[i] += finalBatche.get(j).get(i);
 			}
-			lossObligor[i] /= lengthFinalBatch;
+			lossObligor[i] /= seuil;
 		}
-
 		double ES = lossObligor[nbStock];
 		double s = 0;
 		for (int j = 0; j < lengthFinalBatch; j++) {
-			s += Math.pow(finalBatche.get(j).get(nbStock) - ES, 2);
+			//System.out.println(finalBatche.get(j).get(nbStock +1));
+			//System.out.println(finalBatche.get(j).get(nbStock));
+			//System.out.println();
+			if(IS) s += Math.pow(finalBatche.get(j).get(nbStock) * finalBatche.get(j).get(nbStock +1) -ES, 2);
+			else s += Math.pow(finalBatche.get(j).get(nbStock) - ES, 2);
 		}
-		s /= lengthFinalBatch - 1;
-
+		s /= lengthFinalBatch ;
+		if (IS) System.out.println("Number of points generated in the tail by IS: " + lengthFinalBatch);
 		System.out.println("Expected Loss: " + sum / nbSim);
 		System.out.println("Volatility: " + volatility(nbSim, sumCarre, sum));
 		System.out.println("Var: " + finalBatche.get(0).get(nbStock));
 		System.out.println("Expected Shortfall: " + ES);
-		System.out.println("Dispersion de ES: " + Math.sqrt(s));
+		System.out.println("MC error in tail of distribution: " + Math.sqrt(s));
 		System.out.println("Moyenne of risk contribution Type 1: " + moyenne(0, nbStockType1, lossObligor));
 		System.out.println("Moyenne of risk contribution Type 2: " + moyenne(nbStockType1, nbStockType2, lossObligor));
 		System.out.println("Moyenne of risk contribution Type 3: " + moyenne(nbStockType2, nbStockType3, lossObligor));
+		System.out.println("Moyenne of risk contribution Type 1 in percentage: " + String.format("%.3f", moyenne(0, nbStockType1, lossObligor) / ES*100)  + "%");
+		System.out.println("Moyenne of risk contribution Type 2 in percentage: " + String.format("%.3f", moyenne(nbStockType1, nbStockType2, lossObligor) / ES*100) +"%");
+		System.out.println("Moyenne of risk contribution Type 3 in percentage: " + String.format("%.3f", moyenne(nbStockType2, nbStockType3, lossObligor) / ES*100)  + "%");
 	}
 	
 }
