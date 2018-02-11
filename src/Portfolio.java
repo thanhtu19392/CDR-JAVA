@@ -9,6 +9,7 @@ public class Portfolio {
 	
 	Portfolio(double correlation, ArrayList<Loan> loan){
 		System.out.println("start our portfolio");
+		System.out.println("-------------------------------------");
 		this.loan = loan;
 		this.correlation = correlation;
 	}

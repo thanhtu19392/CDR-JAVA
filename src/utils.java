@@ -143,14 +143,11 @@ public class utils {
 		double ES = lossObligor[nbStock];
 		double s = 0;
 		for (int j = 0; j < lengthFinalBatch; j++) {
-			//System.out.println(finalBatche.get(j).get(nbStock +1));
-			//System.out.println(finalBatche.get(j).get(nbStock));
-			//System.out.println();
-			if(IS) s += Math.pow(finalBatche.get(j).get(nbStock) * finalBatche.get(j).get(nbStock +1) -ES, 2);
+			if(IS) s += Math.pow((finalBatche.get(j).get(nbStock) * finalBatche.get(j).get(nbStock +1) -ES*seuil/lengthFinalBatch), 2);
 			else s += Math.pow(finalBatche.get(j).get(nbStock) - ES, 2);
 		}
 		s /= lengthFinalBatch ;
-		if (IS) System.out.println("Number of points generated in the tail by IS: " + lengthFinalBatch);
+		System.out.println("Number of points generated in the tail 5%: " + lengthFinalBatch);
 		System.out.println("Expected Loss: " + sum / nbSim);
 		System.out.println("Volatility: " + volatility(nbSim, sumCarre, sum));
 		System.out.println("Var: " + finalBatche.get(0).get(nbStock));

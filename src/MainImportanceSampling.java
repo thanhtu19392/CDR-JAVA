@@ -9,30 +9,37 @@ public class MainImportanceSampling extends utils{
 	public static int nbStockType2 = 40;
 	public static int nbStockType3 = 80;
 	public static int nbStock = nbStockType1 + nbStockType2 + nbStockType3;
-	public static ArrayList<Loan> listLoans = new ArrayList<Loan>();
-	public static ArrayList<ArrayList<Double>> batcheArray = new ArrayList<ArrayList<Double>>();
-	public static ArrayList<Double> batcheList = new ArrayList<Double>();
-	public static ArrayList<ArrayList<Double>> finalBatche = new ArrayList<ArrayList<Double>>();
 
 	public static void main(String[] args) {
+
+		double[] listSigma =  {0.5, 1, 1.5, 2, 3};
+		for(int i = 0; i < listSigma.length; i++){
+			ImportanceSampling(listSigma[i], 100000 , 0.95);
+		}
+		
+	}
+	
+	public static void ImportanceSampling(double sigma, int nbSim, double probaVar){
 		/**
 		 * @param: (double sigma, int nbSim, double probaVar)
-		 * sigma: scale level
+		 * sigma: scale-up factor level
 		 * nbSim: number of simulation
 		 * probaVar: probability of variance
 		 * --------------------------------
 		 * @return: print EL, Vol, Var, ES, risk contribution of obligor
 		 */
-		ImportanceSampling(3.0, 100000 , 0.95);
-	}
-	
-	public static void ImportanceSampling(double sigma, int nbSim, double probaVar){
+		
 		// create our portfolio
+		ArrayList<Loan> listLoans = new ArrayList<Loan>();
 		addLoans(listLoans, nbStockType1, 0.00125, 0.55, 200000000, 0.15);
 		addLoans(listLoans, nbStockType2, 0.0025, 0.55, 100000000, 0.15);
 		addLoans(listLoans, nbStockType3, 0.005, 0.55, 50000000, 0.15);
 		Portfolio portfolio = new Portfolio(0.2, listLoans);
+		
 		int seuil = (int) ((1 - probaVar) * nbSim);
+		ArrayList<Double> batcheList = new ArrayList<Double>();
+		ArrayList<ArrayList<Double>> finalBatche = new ArrayList<ArrayList<Double>>();
+		
 		// create matrix correlation
 		Matrix MatrixCorrelation = createMatrixCorrelation(nbStock,portfolio.getCorrelation());
 
@@ -86,7 +93,7 @@ public class MainImportanceSampling extends utils{
 			sumWeight += BatchArray.get(indice).get(nbStock +1);
 			indice -= 1;
 		}
-		for (int i = indice; i < BatchArray.size(); i++) {
+		for (int i = indice + 1; i < BatchArray.size(); i++) {
 			batchSelected.add(BatchArray.get(i));
 		}
 		return batchSelected;

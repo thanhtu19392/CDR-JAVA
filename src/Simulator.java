@@ -76,10 +76,6 @@ public class Simulator extends utils {
     	double totalLoss = 0;
 		int n = 0;
 		NormalDistribution distribution = new NormalDistribution(0, 1);
-		System.out.println();
-		System.out.println(distribution.inverseCumulativeProbability(0.125/100));
-		System.out.println(distribution.inverseCumulativeProbability(0.25/100));
-		System.out.println(distribution.inverseCumulativeProbability(0.5/100));
 		Matrix unCorrelatedRNMatrix = new Matrix(nbStock, 1);
 		for (int i = 0; i< nbStock; i++){
 			unCorrelatedRNMatrix.set(i, 0, getRandomGauss(0, 1));
@@ -108,9 +104,6 @@ public class Simulator extends utils {
 		}
 		batcheList.add(totalLoss);
 		batcheList.add(weight);
-		//System.out.println(totalLoss);
-		//System.out.println(weight);
-		//System.out.println();
 		return batcheList;
     }
     
